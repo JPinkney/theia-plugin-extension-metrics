@@ -30,7 +30,7 @@ export class PluginMetricsOutputChannelRegistry extends OutputChannelRegistryMai
 
     $append(channelName: string, value: string): PromiseLike<void> {
         if (value.startsWith('[Error')) {
-            this.pluginMetricsExtractor.mine(channelName, false);
+            this.pluginMetricsExtractor.mineErrors(channelName);
         }
         return super.$append(channelName, value);
     }
