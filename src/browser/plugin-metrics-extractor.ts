@@ -48,6 +48,17 @@ export class PluginMetricsExtractor {
         const method = this.extractMethodFromValue(value);
 
         this.mine(id, method || 'unknown', isRequestSuccessful);
+
+        // We need to remove 1 from both the totalRequests and the successfulResponses
+        // because the plugin-metrics-resolver is always going to get hit
+        const thisExtension = this._extensionIDSuccess.get(id);
+        if (thisExtension) {
+            const successes = thisExtension.get(method || 'unknown');
+            if (successes) {
+                successes.totalRequests -= 1;
+                successes.succesfulResponses -= 1;
+            }
+        }
     }
 
     async mine(id: string, method: string, isRequestSuccessful: boolean): Promise<void> {
@@ -60,6 +71,16 @@ export class PluginMetricsExtractor {
                 succesfulResponses: 0,
                 totalRequests: 0
             } as Success));
+        } else if (this._extensionIDSuccess.has(id)) {
+            // It has ID
+            // We need to check if it has the method yet
+            const z = this._extensionIDSuccess.get(id) as Map<string, Success>;
+            if (!z.has(method)) {
+                z.set(method, {
+                    succesfulResponses: 0,
+                    totalRequests: 0
+                });
+            }
         }
 
         const thisExtension = this._extensionIDSuccess.get(id);

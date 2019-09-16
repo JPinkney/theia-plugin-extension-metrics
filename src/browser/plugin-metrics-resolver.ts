@@ -35,7 +35,7 @@ export class PluginMetricsResolver {
                 return value;
             });
         } else if (isPromiseLike(a)) {
-            return a.then(value => this.metricsExtrator.mine(id, value, true), () => this.metricsExtrator.mine(id, '', false));
+            return a.then(value => this.metricsExtrator.mine(id, value, true), () => this.metricsExtrator.mine(id, method, false));
         }
     }
 
