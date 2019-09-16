@@ -15,21 +15,21 @@
  ********************************************************************************/
 
 import { ContainerModule } from 'inversify';
-import { LanguagesMainFactory, OutputChannelRegistryFactory } from '@theia/plugin-ext/lib/common/plugin-api-rpc';
-import { RPCProtocol } from '@theia/plugin-ext/lib/common/rpc-protocol';
 import { LanguagesMainPluginMetrics } from './plugin-metrics-languages-main';
 import { PluginMetrics, metricsJsonRpcPath } from '../common/metrics-protocol';
 import { WebSocketConnectionProvider } from '@theia/core/lib/browser/messaging/ws-connection-provider';
 import { PluginMetricsExtractor } from './plugin-metrics-extractor';
 import { PluginMetricsResolver } from './plugin-metrics-resolver';
 import { PluginMetricsOutputChannelRegistry } from './plugin-metrics-output-registry';
+import { LanguagesMainImpl } from '@theia/plugin-ext/lib/main/browser/languages-main';
+import { OutputChannelRegistryMainImpl } from '@theia/plugin-ext/lib/main/browser/output-channel-registry-main';
 
 export default new ContainerModule((bind, unbind, isBound, rebind) => {
     bind(PluginMetricsResolver).toSelf().inSingletonScope();
     bind(PluginMetricsExtractor).toSelf().inSingletonScope();
 
-    rebind(LanguagesMainFactory).toFactory(context => (proxy: RPCProtocol) => new LanguagesMainPluginMetrics(proxy, context.container.get(PluginMetricsResolver)));
-    rebind(OutputChannelRegistryFactory).toFactory(context => () => new PluginMetricsOutputChannelRegistry(context.container));
+    rebind(LanguagesMainImpl).to(LanguagesMainPluginMetrics).inTransientScope();
+    rebind(OutputChannelRegistryMainImpl).to(PluginMetricsOutputChannelRegistry).inTransientScope();
 
     bind(PluginMetrics).toDynamicValue(ctx => {
         const connection = ctx.container.get(WebSocketConnectionProvider);

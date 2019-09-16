@@ -14,23 +14,39 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { injectable, interfaces } from 'inversify';
+import { injectable, inject } from 'inversify';
 import { OutputChannelRegistryMainImpl } from '@theia/plugin-ext/lib/main/browser/output-channel-registry-main';
 import { PluginMetricsExtractor } from './plugin-metrics-extractor';
 
 @injectable()
 export class PluginMetricsOutputChannelRegistry extends OutputChannelRegistryMainImpl {
 
+    @inject(PluginMetricsExtractor)
     protected readonly pluginMetricsExtractor: PluginMetricsExtractor;
 
-    constructor(container: interfaces.Container) {
-        super(container);
-        this.pluginMetricsExtractor = container.get(PluginMetricsExtractor);
+    // This is a map of output channel names to plugin ids
+    private registryMap = new Map<string, string>();
+
+    constructor() {
+        super();
+        this.registryMap.set('Language Support for Java', 'redhat.java');
+        this.registryMap.set('Language Support for Apache Camel', 'vscode-apache-camel');
+        this.registryMap.set('YAML Support', 'redhat.vscode-yaml');
+        this.registryMap.set('XML Support', 'redhat.vscode-xml');
+        this.registryMap.set('TypeScript', 'typescript-language-features');
+        this.registryMap.set('Language Server Example', 'language-server-sample.lsp-sample');
     }
 
     $append(channelName: string, value: string): PromiseLike<void> {
         if (value.startsWith('[Error')) {
-            this.pluginMetricsExtractor.mineErrors(channelName);
+
+            if (this.registryMap.has(channelName)) {
+                this.pluginMetricsExtractor.mineErrors(this.registryMap.get(channelName) as string, value, false);
+            } else if (this.pluginMetricsExtractor.extensionIDSuccess.has(channelName)) {
+                this.pluginMetricsExtractor.mineErrors(channelName, value, false);
+            } else {
+                console.log('Could not find the correct vscode extension for this error');
+            }
         }
         return super.$append(channelName, value);
     }

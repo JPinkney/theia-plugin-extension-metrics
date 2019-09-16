@@ -22,10 +22,6 @@ interface Success {
     succesfulResponses: number;
 }
 
-interface ErrorResponses {
-    totalErrors: number;
-}
-
 // Purpose of this class is to mine the plugin metrics for data we want
 @injectable()
 export class PluginMetricsExtractor {
@@ -33,8 +29,10 @@ export class PluginMetricsExtractor {
     @inject(PluginMetrics)
     private pluginMetrics: PluginMetrics;
 
-    private extensionIDSuccess = new Map<string, Success>();
-    private extensionErrors = new Map<string, ErrorResponses>();
+    // Map of plugin extension id to method id to success
+    private _extensionIDSuccess = new Map<string, Map<string, Success>>();
+
+    private NODE_BASED_REGEX = /(?<=Request)(.*?)(?=failed)/;
 
     private prometheusHeader = '# HELP language_server_metrics Percentage of successful language requests\n# TYPE language_server_metrics gauge\n';
 
@@ -42,46 +40,38 @@ export class PluginMetricsExtractor {
         this.convertExtensionMapToString();
     }
 
-    async mine(id: string, isRequestSuccessful: boolean): Promise<void> {
+    async mineErrors(id: string, value: string, isRequestSuccessful: boolean): Promise<void> {
         if (!id) {
             return;
         }
 
-        if (!this.extensionIDSuccess.has(id)) {
-            this.extensionIDSuccess.set(id, {
-                succesfulResponses: 0,
-                totalRequests: 0
-            });
-        }
+        const method = this.extractMethodFromValue(value);
 
-        const thisExtension = this.extensionIDSuccess.get(id) as Success;
-        thisExtension.totalRequests += 1;
-        if (isRequestSuccessful) {
-            thisExtension.succesfulResponses += 1;
-        }
+        this.mine(id, method || 'unknown', isRequestSuccessful);
     }
 
-    /**
-     * This method is called by the output channel when an error is detected.
-     * Since the output channel does not have an associated model or language client
-     * we can't figure out how many total errors there are. Instead, we opt to log
-     * the total number of errors that appear for a vscode extension
-     *
-     * @param id the id of the output channel that errored
-     */
-    async mineErrors(id: string): Promise<void> {
+    async mine(id: string, method: string, isRequestSuccessful: boolean): Promise<void> {
         if (!id) {
             return;
         }
 
-        if (!this.extensionErrors.has(id)) {
-            this.extensionErrors.set(id, {
-                totalErrors: 0
-            });
+        if (!this._extensionIDSuccess.has(id)) {
+            this._extensionIDSuccess.set(id, new Map().set(method, {
+                succesfulResponses: 0,
+                totalRequests: 0
+            } as Success));
         }
 
-        const thisExtension = this.extensionErrors.get(id) as ErrorResponses;
-        thisExtension.totalErrors += 1;
+        const thisExtension = this._extensionIDSuccess.get(id);
+        if (thisExtension) {
+            const successes = thisExtension.get(method);
+            if (successes) {
+                successes.totalRequests += 1;
+                if (isRequestSuccessful) {
+                    successes.succesfulResponses += 1;
+                }
+            }
+        }
     }
 
     /**
@@ -91,28 +81,32 @@ export class PluginMetricsExtractor {
     private convertExtensionMapToString(): void {
         setInterval(() => {
             let metricString = this.prometheusHeader;
-            this.extensionIDSuccess.forEach((value, key) => {
-                metricString += this.createPrometheusMetric(key, value);
-            });
-            this.extensionErrors.forEach((value, key) => {
-                metricString += this.createPrometheusMetric(key, value);
+            this._extensionIDSuccess.forEach((value, key) => {
+                value.forEach((success, method) => {
+                    metricString += this.createPrometheusMetric(key, method, success);
+                });
             });
             this.pluginMetrics.setMetrics(metricString);
         }, METRICS_TIMEOUT);
     }
 
-    private createPrometheusMetric(id: string, success: Success | ErrorResponses): string {
-        if (this.isErrorResponse(success)) {
-            return `language_server_metrics{id="${id}"} ${success.totalErrors}\n`;
-        } else {
-            return `language_server_metrics{id="${id}"} ${(success.succesfulResponses / success.totalRequests) * 100}\n`;
-        }
+    private createPrometheusMetric(id: string, method: string, success: Success): string {
+        return `language_server_metrics{id="${id}" method="${method}"} ${(success.succesfulResponses / success.totalRequests) * 100}\n`;
     }
 
-    // tslint:disable-next-line:no-any
-    private isErrorResponse(a: any): a is ErrorResponses {
-        // tslint:disable-next-line:no-any
-        return (<ErrorResponses>a).totalErrors !== undefined;
+    get extensionIDSuccess(): Map<string, Map<string, Success>> {
+        return this._extensionIDSuccess;
+    }
+
+    private extractMethodFromValue(value: string | undefined): string | undefined {
+        if (!value) {
+            return value;
+        }
+        const matches = value.match(this.NODE_BASED_REGEX);
+        if (matches) {
+            return matches[0].trim();
+        }
+        return undefined;
     }
 
 }

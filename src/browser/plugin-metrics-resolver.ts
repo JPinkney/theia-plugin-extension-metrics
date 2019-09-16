@@ -28,17 +28,14 @@ export class PluginMetricsResolver {
     private metricsExtrator: PluginMetricsExtractor;
 
     // tslint:disable-next-line:no-any
-    async requestMetric(id: string, a: PromiseLike<any> | Promise<any> | Thenable<any> | any): Promise<any> {
+    async requestMetric(id: string, method: string, a: PromiseLike<any> | Promise<any> | Thenable<any> | any): Promise<any> {
         if (isPromise(a)) {
             return a.catch(error => Promise.reject(error)).then(value => {
-                this.metricsExtrator.mine(id, true);
+                this.metricsExtrator.mine(id, method, true);
                 return value;
             });
         } else if (isPromiseLike(a)) {
-            return a.then(() => this.metricsExtrator.mine(id, true), () => this.metricsExtrator.mine(id, false));
-        } else {
-            this.metricsExtrator.mine(id, true);
-            return a;
+            return a.then(value => this.metricsExtrator.mine(id, value, true), () => this.metricsExtrator.mine(id, '', false));
         }
     }
 
