@@ -16,13 +16,13 @@
 
 import { injectable, inject } from 'inversify';
 import { OutputChannelRegistryMainImpl } from '@theia/plugin-ext/lib/main/browser/output-channel-registry-main';
-import { PluginMetricsExtractor } from './plugin-metrics-extractor';
+import { PluginMetricsCreator } from './plugin-metrics-creator';
 
 @injectable()
 export class PluginMetricsOutputChannelRegistry extends OutputChannelRegistryMainImpl {
 
-    @inject(PluginMetricsExtractor)
-    protected readonly pluginMetricsExtractor: PluginMetricsExtractor;
+    @inject(PluginMetricsCreator)
+    protected readonly pluginMetricsCreator: PluginMetricsCreator;
 
     // This is a map of output channel names to plugin ids
     private registryMap = new Map<string, string>();
@@ -41,9 +41,9 @@ export class PluginMetricsOutputChannelRegistry extends OutputChannelRegistryMai
         if (value.startsWith('[Error')) {
 
             if (this.registryMap.has(channelName)) {
-                this.pluginMetricsExtractor.mineErrors(this.registryMap.get(channelName) as string, value, false);
-            } else if (this.pluginMetricsExtractor.extensionIDSuccess.has(channelName)) {
-                this.pluginMetricsExtractor.mineErrors(channelName, value, false);
+                this.pluginMetricsCreator.createErrorMetric(this.registryMap.get(channelName) as string, value);
+            } else if (this.pluginMetricsCreator.extensionIDSuccess.has(channelName)) {
+                this.pluginMetricsCreator.createErrorMetric(channelName, value);
             } else {
                 console.log('Could not find the correct vscode extension for this error');
             }

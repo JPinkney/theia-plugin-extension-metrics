@@ -14,41 +14,56 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
+// tslint:disable:no-any
+
 import { injectable, inject } from 'inversify';
-import { PluginMetricsExtractor } from './plugin-metrics-extractor';
+import { PluginMetricsCreator } from './plugin-metrics-creator';
 
 /**
- * This class takes a request from a language and converts to it success or failure.
- * From there, the plugin data extractor mines the information
+ * This class helps resolve language server requests into successess or failures
+ * and sends the data to the metricsExtractor
  */
 @injectable()
 export class PluginMetricsResolver {
 
-    @inject(PluginMetricsExtractor)
-    private metricsExtrator: PluginMetricsExtractor;
+    @inject(PluginMetricsCreator)
+    private metricsCreator: PluginMetricsCreator;
 
-    // tslint:disable-next-line:no-any
-    async requestMetric(id: string, method: string, a: PromiseLike<any> | Promise<any> | Thenable<any> | any): Promise<any> {
-        if (isPromise(a)) {
-            return a.catch(error => Promise.reject(error)).then(value => {
-                this.metricsExtrator.mine(id, method, true);
+    /**
+     * Resolve a request for pluginID and create a metric based on whether or not
+     * the language server errored.
+     *
+     * @param pluginID the ID of the plugin that made the request
+     * @param method  the method that was request
+     * @param request the result of the language server request
+     */
+    async resolveRequest(pluginID: string, method: string, request: PromiseLike<any> | Promise<any> | Thenable<any> | any): Promise<any> {
+        if (isPromise(request)) {
+            return request.catch(error => Promise.reject(error)).then(value => {
+                this.metricsCreator.createMetric(pluginID, method, true);
                 return value;
             });
-        } else if (isPromiseLike(a)) {
-            return a.then(value => this.metricsExtrator.mine(id, value, true), () => this.metricsExtrator.mine(id, method, false));
+        } else if (isPromiseLike(request)) {
+            return request.then(value => {
+                this.metricsCreator.createMetric(pluginID, method, true);
+                return value;
+            },
+                error => {
+                    this.metricsCreator.createMetric(pluginID, method, false);
+                    return Promise.reject(error);
+                });
+        } else {
+            this.metricsCreator.createMetric(pluginID, method, true);
+            return request;
         }
     }
 
 }
 
-// tslint:disable-next-line:no-any
-function isPromise(a: any): a is Promise<any> {
-    // tslint:disable-next-line:no-any
-    return (<Promise<any>>a).then !== undefined;
+function isPromise(potentialPromise: any): potentialPromise is Promise<any> {
+    return (<Promise<any>>potentialPromise).then !== undefined;
 }
 
-// tslint:disable-next-line:no-any
-function isPromiseLike(a: any): a is PromiseLike<any> {
-    // tslint:disable-next-line:no-any
-    return (<PromiseLike<any>>a).then !== undefined;
+function isPromiseLike(potentialPromiseLike: any): potentialPromiseLike is PromiseLike<any> {
+    return (<PromiseLike<any>>potentialPromiseLike).then !== undefined;
 }

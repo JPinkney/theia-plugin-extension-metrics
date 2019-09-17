@@ -18,7 +18,7 @@ import { ContainerModule } from 'inversify';
 import { LanguagesMainPluginMetrics } from './plugin-metrics-languages-main';
 import { PluginMetrics, metricsJsonRpcPath } from '../common/metrics-protocol';
 import { WebSocketConnectionProvider } from '@theia/core/lib/browser/messaging/ws-connection-provider';
-import { PluginMetricsExtractor } from './plugin-metrics-extractor';
+import { PluginMetricsCreator } from './plugin-metrics-creator';
 import { PluginMetricsResolver } from './plugin-metrics-resolver';
 import { PluginMetricsOutputChannelRegistry } from './plugin-metrics-output-registry';
 import { LanguagesMainImpl } from '@theia/plugin-ext/lib/main/browser/languages-main';
@@ -26,7 +26,7 @@ import { OutputChannelRegistryMainImpl } from '@theia/plugin-ext/lib/main/browse
 
 export default new ContainerModule((bind, unbind, isBound, rebind) => {
     bind(PluginMetricsResolver).toSelf().inSingletonScope();
-    bind(PluginMetricsExtractor).toSelf().inSingletonScope();
+    bind(PluginMetricsCreator).toSelf().inSingletonScope();
 
     rebind(LanguagesMainImpl).to(LanguagesMainPluginMetrics).inTransientScope();
     rebind(OutputChannelRegistryMainImpl).to(PluginMetricsOutputChannelRegistry).inTransientScope();
