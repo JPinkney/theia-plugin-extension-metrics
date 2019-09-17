@@ -16,11 +16,7 @@
 
 import { inject, injectable } from 'inversify';
 import { PluginMetrics, METRICS_TIMEOUT } from '../common/metrics-protocol';
-
-interface Success {
-    totalRequests: number;
-    succesfulResponses: number;
-}
+import { Success, Metric, setMetric, setSuccess } from './plugin-metrics-interfaces';
 
 @injectable()
 export class PluginMetricsCreator {
@@ -28,7 +24,6 @@ export class PluginMetricsCreator {
     @inject(PluginMetrics)
     private pluginMetrics: PluginMetrics;
 
-    // Map of plugin extension id to method id to success
     private _extensionIDSuccess = new Map<string, Map<string, Success>>();
 
     private METHOD_NOT_FOUND = 'unknown';
@@ -48,15 +43,17 @@ export class PluginMetricsCreator {
      * @param pluginID The id of the plugin
      * @param errorContents The contents that the langauge server error has produced
      */
-    async createErrorMetric(pluginID: string, errorContents: string): Promise<void> {
-        if (!pluginID) {
+    async createErrorMetric(metric: Metric): Promise<void> {
+        if (!metric.pluginID) {
             return;
         }
 
-        const method = this.extractMethodFromValue(errorContents);
+        const method = this.extractMethodFromValue(metric.errorContentsOrMethod);
 
-        this.createMetric(pluginID, method, false);
-        this.decreaseExtensionRequests(pluginID, method);
+        const createdMetric = setMetric(metric.pluginID, method, metric.timeTaken);
+        this.createMetric(createdMetric, false);
+
+        this.decreaseExtensionRequests(metric.pluginID, method);
     }
 
     /**
@@ -88,27 +85,25 @@ export class PluginMetricsCreator {
      * @param method the method that you want to update
      * @param isRequestSuccessful is the language server request successful or not
      */
-    async createMetric(pluginID: string, method: string, isRequestSuccessful: boolean): Promise<void> {
-        if (!pluginID) {
+    async createMetric(metric: Metric, isRequestSuccessful: boolean): Promise<void> {
+        if (!metric.pluginID) {
             return;
         }
 
-        if (!this._extensionIDSuccess.has(pluginID)) {
-            this._extensionIDSuccess.set(pluginID, new Map().set(method, {
-                succesfulResponses: 0,
-                totalRequests: 0
-            } as Success));
-        } else if (this._extensionIDSuccess.has(pluginID)) {
-            const z = this._extensionIDSuccess.get(pluginID) as Map<string, Success>;
-            if (!z.has(method)) {
-                z.set(method, {
-                    succesfulResponses: 0,
-                    totalRequests: 0
-                });
+        // When we are in this function we know its a method or "unknown" so we can make it clearer
+        const method = metric.errorContentsOrMethod;
+        const createdSuccess = setSuccess(0, 0, metric.timeTaken);
+
+        if (!this._extensionIDSuccess.has(metric.pluginID)) {
+            this._extensionIDSuccess.set(metric.pluginID, new Map().set(method, createdSuccess));
+        } else if (this._extensionIDSuccess.has(metric.pluginID)) {
+            const methodToSuccess = this._extensionIDSuccess.get(metric.pluginID) as Map<string, Success>;
+            if (!methodToSuccess.has(method)) {
+                methodToSuccess.set(method, createdSuccess);
             }
         }
 
-        const thisExtension = this._extensionIDSuccess.get(pluginID);
+        const thisExtension = this._extensionIDSuccess.get(metric.pluginID);
         if (thisExtension) {
             const successes = thisExtension.get(method);
             if (successes) {
@@ -116,6 +111,7 @@ export class PluginMetricsCreator {
                 if (isRequestSuccessful) {
                     successes.succesfulResponses += 1;
                 }
+                successes.avgTimeTaken = this.calculateAvgTime(successes, metric.timeTaken);
             }
         }
     }
@@ -127,6 +123,7 @@ export class PluginMetricsCreator {
     private convertExtensionMapToString(): void {
         setInterval(() => {
             if (this._extensionIDSuccess.size !== 0) {
+
                 let metricString = this.prometheusHeader;
                 this._extensionIDSuccess.forEach((value, key) => {
                     value.forEach((success, method) => {
@@ -134,14 +131,16 @@ export class PluginMetricsCreator {
                     });
                 });
                 this.pluginMetrics.setMetrics(metricString);
+
             }
         }, METRICS_TIMEOUT);
     }
 
     private createPrometheusMetric(id: string, method: string, success: Success): string {
-        return `language_server_metrics{id="${id}" method="${method}"} ${(success.succesfulResponses / success.totalRequests) * 100}\n`;
+        return `language_server_metrics{id="${id}" method="${method}" avgTime="${success.avgTimeTaken}"} ${(success.succesfulResponses / success.totalRequests) * 100}\n`;
     }
 
+    // Map of plugin extension id to method id to success
     get extensionIDSuccess(): Map<string, Map<string, Success>> {
         return this._extensionIDSuccess;
     }
@@ -163,6 +162,16 @@ export class PluginMetricsCreator {
             return matches[0].trim();
         }
         return this.METHOD_NOT_FOUND;
+    }
+
+    /**
+     * Calculate the average time it takes for all the requests to be made
+     *
+     * @param success The success metric so far
+     * @param time the time it took for the current request to complete
+     */
+    private calculateAvgTime(success: Success, time: number): number {
+        return (((success.totalRequests - 1) * success.avgTimeTaken) + time) / success.totalRequests;
     }
 
 }

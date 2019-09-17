@@ -18,6 +18,7 @@
 
 import { injectable, inject } from 'inversify';
 import { PluginMetricsCreator } from './plugin-metrics-creator';
+import { setMetric } from './plugin-metrics-interfaces';
 
 /**
  * This class helps resolve language server requests into successess or failures
@@ -38,26 +39,31 @@ export class PluginMetricsResolver {
      * @param request the result of the language server request
      */
     async resolveRequest(pluginID: string, method: string, request: PromiseLike<any> | Promise<any> | Thenable<any> | any): Promise<any> {
+        const currentTime = performance.now();
         if (isPromise(request)) {
             return request.catch(error => Promise.reject(error)).then(value => {
-                this.metricsCreator.createMetric(pluginID, method, true);
+                this.createAndSetMetric(pluginID, method, performance.now() - currentTime, true);
                 return value;
             });
         } else if (isPromiseLike(request)) {
             return request.then(value => {
-                this.metricsCreator.createMetric(pluginID, method, true);
+                this.createAndSetMetric(pluginID, method, performance.now() - currentTime, true);
                 return value;
             },
                 error => {
-                    this.metricsCreator.createMetric(pluginID, method, false);
+                    this.createAndSetMetric(pluginID, method, performance.now() - currentTime, false);
                     return Promise.reject(error);
                 });
         } else {
-            this.metricsCreator.createMetric(pluginID, method, true);
+            this.createAndSetMetric(pluginID, method, performance.now() - currentTime, true);
             return request;
         }
     }
 
+    private createAndSetMetric(pluginID: string, method: string, time: number, successful: boolean): void {
+        const createdSuccessMetric = setMetric(pluginID, method, time);
+        this.metricsCreator.createMetric(createdSuccessMetric, successful);
+    }
 }
 
 function isPromise(potentialPromise: any): potentialPromise is Promise<any> {

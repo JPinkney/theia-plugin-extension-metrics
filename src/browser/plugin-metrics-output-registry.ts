@@ -17,6 +17,7 @@
 import { injectable, inject } from 'inversify';
 import { OutputChannelRegistryMainImpl } from '@theia/plugin-ext/lib/main/browser/output-channel-registry-main';
 import { PluginMetricsCreator } from './plugin-metrics-creator';
+import { setMetric } from './plugin-metrics-interfaces';
 
 @injectable()
 export class PluginMetricsOutputChannelRegistry extends OutputChannelRegistryMainImpl {
@@ -37,18 +38,24 @@ export class PluginMetricsOutputChannelRegistry extends OutputChannelRegistryMai
         this.registryMap.set('Language Server Example', 'language-server-sample.lsp-sample');
     }
 
-    $append(channelName: string, value: string): PromiseLike<void> {
-        if (value.startsWith('[Error')) {
+    $append(channelName: string, errorOrValue: string): PromiseLike<void> {
+        if (errorOrValue.startsWith('[Error')) {
 
             if (this.registryMap.has(channelName)) {
-                this.pluginMetricsCreator.createErrorMetric(this.registryMap.get(channelName) as string, value);
+
+                const createdMetric = setMetric(this.registryMap.get(channelName) as string, errorOrValue, 0);
+                this.pluginMetricsCreator.createErrorMetric(createdMetric);
+
             } else if (this.pluginMetricsCreator.extensionIDSuccess.has(channelName)) {
-                this.pluginMetricsCreator.createErrorMetric(channelName, value);
+
+                const createdMetric = setMetric(channelName, errorOrValue, 0);
+                this.pluginMetricsCreator.createErrorMetric(createdMetric);
+
             } else {
                 console.log('Could not find the correct vscode extension for this error');
             }
         }
-        return super.$append(channelName, value);
+        return super.$append(channelName, errorOrValue);
     }
 
 }
