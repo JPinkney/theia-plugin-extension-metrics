@@ -126,13 +126,15 @@ export class PluginMetricsCreator {
      */
     private convertExtensionMapToString(): void {
         setInterval(() => {
-            let metricString = this.prometheusHeader;
-            this._extensionIDSuccess.forEach((value, key) => {
-                value.forEach((success, method) => {
-                    metricString += this.createPrometheusMetric(key, method, success);
+            if (this._extensionIDSuccess.size !== 0) {
+                let metricString = this.prometheusHeader;
+                this._extensionIDSuccess.forEach((value, key) => {
+                    value.forEach((success, method) => {
+                        metricString += this.createPrometheusMetric(key, method, success);
+                    });
                 });
-            });
-            this.pluginMetrics.setMetrics(metricString);
+                this.pluginMetrics.setMetrics(metricString);
+            }
         }, METRICS_TIMEOUT);
     }
 
