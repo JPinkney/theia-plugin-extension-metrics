@@ -36,6 +36,7 @@ export class PluginMetricsOutputChannelRegistry extends OutputChannelRegistryMai
         this.registryMap.set('XML Support', 'redhat.vscode-xml');
         this.registryMap.set('TypeScript', 'typescript-language-features');
         this.registryMap.set('Language Server Example', 'language-server-sample.lsp-sample');
+        this.registryMap.set('Language Server Example 2', 'language-server-sample.lsp-sample');
     }
 
     $append(channelName: string, errorOrValue: string): PromiseLike<void> {

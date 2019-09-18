@@ -28,7 +28,9 @@ export class PluginMetricsCreator {
 
     private METHOD_NOT_FOUND = 'unknown';
     private NODE_BASED_REGEX = /(?<=Request)(.*?)(?=failed)/;
-    private prometheusHeader = '# HELP language_server_metrics Percentage of successful language requests\n# TYPE language_server_metrics gauge\n';
+    private prometheusSuccessMetricsHeader = '# HELP language_server_success_metrics Percentage of successful language requests\n# TYPE language_server_success_metrics gauge\n';
+    private prometheusAvgTimeMetricsHeader =
+        '# HELP language_server_time_metrics Number of milliseconds it takes on average for a launguage server request\n# TYPE language_server_time_metrics gauge\n';
 
     constructor() {
         this.convertExtensionMapToString();
@@ -124,20 +126,32 @@ export class PluginMetricsCreator {
         setInterval(() => {
             if (this._extensionIDSuccess.size !== 0) {
 
-                let metricString = this.prometheusHeader;
+                let metricString = this.prometheusSuccessMetricsHeader;
                 this._extensionIDSuccess.forEach((value, key) => {
                     value.forEach((success, method) => {
-                        metricString += this.createPrometheusMetric(key, method, success);
+                        metricString += this.createPrometheusSuccessMetric(key, method, success);
                     });
                 });
+
+                metricString += this.prometheusAvgTimeMetricsHeader;
+                this._extensionIDSuccess.forEach((value, key) => {
+                    value.forEach((success, method) => {
+                        metricString += this.createPrometheusTimeMetric(key, method, success);
+                    });
+                });
+
                 this.pluginMetrics.setMetrics(metricString);
 
             }
         }, METRICS_TIMEOUT);
     }
 
-    private createPrometheusMetric(id: string, method: string, success: Success): string {
-        return `language_server_metrics{id="${id}" method="${method}" avgTime="${success.avgTimeTaken}"} ${(success.succesfulResponses / success.totalRequests) * 100}\n`;
+    private createPrometheusSuccessMetric(id: string, method: string, success: Success): string {
+        return `language_server_success_metrics{id="${id}" method="${method}"} ${(success.succesfulResponses / success.totalRequests) * 100}\n`;
+    }
+
+    private createPrometheusTimeMetric(id: string, method: string, success: Success): string {
+        return `language_server_time_metrics{id="${id}" method="${method}"} ${success.avgTimeTaken}\n`;
     }
 
     // Map of plugin extension id to method id to success
