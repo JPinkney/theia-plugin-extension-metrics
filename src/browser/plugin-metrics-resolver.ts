@@ -41,7 +41,10 @@ export class PluginMetricsResolver {
     async resolveRequest(pluginID: string, method: string, request: PromiseLike<any> | Promise<any> | Thenable<any> | any): Promise<any> {
         const currentTime = performance.now();
         if (isPromise(request)) {
-            return request.catch(error => Promise.reject(error)).then(value => {
+            return request.catch(error => {
+                this.createAndSetMetric(pluginID, method, performance.now() - currentTime, false);
+                return Promise.reject(error);
+            }).then(value => {
                 this.createAndSetMetric(pluginID, method, performance.now() - currentTime, true);
                 return value;
             });
