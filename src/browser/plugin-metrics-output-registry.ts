@@ -17,7 +17,7 @@
 import { injectable, inject } from 'inversify';
 import { OutputChannelRegistryMainImpl } from '@theia/plugin-ext/lib/main/browser/output-channel-registry-main';
 import { PluginMetricsCreator } from './plugin-metrics-creator';
-import { setMetric } from './plugin-metrics-interfaces';
+import { createDefaultRequestData } from './plugin-metrics-interfaces';
 
 @injectable()
 export class PluginMetricsOutputChannelRegistry extends OutputChannelRegistryMainImpl {
@@ -39,12 +39,12 @@ export class PluginMetricsOutputChannelRegistry extends OutputChannelRegistryMai
 
             if (this.registryMap.has(channelName)) {
 
-                const createdMetric = setMetric(this.registryMap.get(channelName) as string, errorOrValue, 0);
+                const createdMetric = createDefaultRequestData(this.registryMap.get(channelName) as string, errorOrValue);
                 this.pluginMetricsCreator.createErrorMetric(createdMetric);
 
-            } else if (this.pluginMetricsCreator.extensionIDSuccess.has(channelName)) {
+            } else if (this.pluginMetricsCreator.extensionIDAnalytics.has(channelName)) {
 
-                const createdMetric = setMetric(channelName, errorOrValue, 0);
+                const createdMetric = createDefaultRequestData(channelName, errorOrValue);
                 this.pluginMetricsCreator.createErrorMetric(createdMetric);
 
             } else {

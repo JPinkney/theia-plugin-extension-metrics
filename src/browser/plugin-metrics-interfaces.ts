@@ -16,22 +16,27 @@
 
 // Define common interfaces that multiple classes can use
 
-export interface Success {
+export interface AnalyticsFromRequests {
     totalRequests: number;
     succesfulResponses: number;
     avgTimeTaken: number;
 }
 
-export interface Metric {
+export interface DataFromRequest {
     pluginID: string;
     errorContentsOrMethod: string;
     timeTaken: number;
 }
 
+export interface MetricOutput {
+    header: string;
+    createMetricOutput(pluginID: string, method: string, requestAnalytics: AnalyticsFromRequests): string;
+}
+
 /**
- * Helper functions for creating an object that corresponds to the metric interface
+ * Helper functions for creating an object that corresponds to the DataFromRequest interface
  */
-export function setMetric(pluginID: string, errorContentsOrMethod: string, timeTaken: number): Metric {
+export function createRequestData(pluginID: string, errorContentsOrMethod: string, timeTaken: number): DataFromRequest {
     return {
         pluginID,
         errorContentsOrMethod,
@@ -39,13 +44,29 @@ export function setMetric(pluginID: string, errorContentsOrMethod: string, timeT
     };
 }
 
+export function createDefaultRequestData(pluginID: string, errorContentsOrMethod: string): DataFromRequest {
+    return {
+        pluginID,
+        errorContentsOrMethod,
+        timeTaken: 0
+    };
+}
+
 /**
- * Helper functions for creating an object that corresponds to the success interface
+ * Helper functions for creating an object that corresponds to the AnalyticsFromRequests interface
  */
-export function setSuccess(totalRequests: number, succesfulResponses: number, avgTimeTaken: number): Success {
+export function createAnalytics(totalRequests: number, succesfulResponses: number, avgTimeTaken: number): AnalyticsFromRequests {
     return {
         avgTimeTaken,
         succesfulResponses,
         totalRequests
+    };
+}
+
+export function createDefaultAnalytics(avgTimeTaken: number): AnalyticsFromRequests {
+    return {
+        avgTimeTaken,
+        succesfulResponses: 0,
+        totalRequests: 0
     };
 }

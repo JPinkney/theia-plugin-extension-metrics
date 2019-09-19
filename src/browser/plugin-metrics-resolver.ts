@@ -18,7 +18,7 @@
 
 import { injectable, inject } from 'inversify';
 import { PluginMetricsCreator } from './plugin-metrics-creator';
-import { setMetric } from './plugin-metrics-interfaces';
+import { createRequestData } from './plugin-metrics-interfaces';
 
 /**
  * This class helps resolve language server requests into successess or failures
@@ -61,7 +61,7 @@ export class PluginMetricsResolver {
     }
 
     private createAndSetMetric(pluginID: string, method: string, time: number, successful: boolean): void {
-        const createdSuccessMetric = setMetric(pluginID, method, time);
+        const createdSuccessMetric = createRequestData(pluginID, method, time);
         this.metricsCreator.createMetric(createdSuccessMetric, successful);
     }
 }
