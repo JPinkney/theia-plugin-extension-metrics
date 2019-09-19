@@ -7,7 +7,8 @@
     "@theia/languages": "^0.10.0",
     "@theia/metrics": "^0.10.0",
     "@theia/plugin-ext": "^0.10.0",
-    "vscode-languageserver-protocol": "^3.14.1"
+    "vscode-languageserver-protocol": "^3.14.1",
+    "@theia/plugin": "^0.10.0"
   },
   "publishConfig": {
     "access": "public"
