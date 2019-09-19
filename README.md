@@ -29,6 +29,7 @@ Then, every 5 seconds [2] the backend will check the plugin metrics via pluginMe
 Then, when you load up the /metrics endpoint you will see the new language metrics.
 
 [1] - [https://www.theia-ide.org/docs/json_rpc](https://www.theia-ide.org/docs/json_rpc)
+
 [2] - This is configurable and lives in common/metrics-protocol.ts 
 
 ## License
