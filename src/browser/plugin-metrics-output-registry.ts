@@ -30,13 +30,8 @@ export class PluginMetricsOutputChannelRegistry extends OutputChannelRegistryMai
 
     constructor() {
         super();
-        this.registryMap.set('Language Support for Java', 'redhat.java');
-        this.registryMap.set('Language Support for Apache Camel', 'vscode-apache-camel');
         this.registryMap.set('YAML Support', 'redhat.vscode-yaml');
         this.registryMap.set('XML Support', 'redhat.vscode-xml');
-        this.registryMap.set('TypeScript', 'typescript-language-features');
-        this.registryMap.set('Language Server Example', 'language-server-sample.lsp-sample');
-        this.registryMap.set('Language Server Example 2', 'language-server-sample.lsp-sample');
     }
 
     $append(channelName: string, errorOrValue: string): PromiseLike<void> {

@@ -26,7 +26,6 @@ export class PluginMetricsCreator {
 
     private _extensionIDSuccess = new Map<string, Map<string, Success>>();
 
-    private METHOD_NOT_FOUND = 'unknown';
     private NODE_BASED_REGEX = /(?<=Request)(.*?)(?=failed)/;
     private prometheusSuccessMetricsHeader = '# HELP language_server_success_metrics Percentage of successful language requests\n# TYPE language_server_success_metrics gauge\n';
     private prometheusAvgTimeMetricsHeader =
@@ -52,10 +51,13 @@ export class PluginMetricsCreator {
 
         const method = this.extractMethodFromValue(metric.errorContentsOrMethod);
 
-        const createdMetric = setMetric(metric.pluginID, method, metric.timeTaken);
-        this.createMetric(createdMetric, false);
+        // only log the metric if we can find the method that it occured in
+        if (method) {
+            const createdMetric = setMetric(metric.pluginID, method, metric.timeTaken);
+            this.createMetric(createdMetric, false);
 
-        this.decreaseExtensionRequests(metric.pluginID, method);
+            this.decreaseExtensionRequests(metric.pluginID, method);
+        }
     }
 
     /**
@@ -167,15 +169,15 @@ export class PluginMetricsCreator {
      *
      * @param errorContents The contents of the current error
      */
-    private extractMethodFromValue(errorContents: string | undefined): string {
+    private extractMethodFromValue(errorContents: string | undefined): string | undefined {
         if (!errorContents) {
-            return this.METHOD_NOT_FOUND;
+            return undefined;
         }
         const matches = errorContents.match(this.NODE_BASED_REGEX);
         if (matches) {
             return matches[0].trim();
         }
-        return this.METHOD_NOT_FOUND;
+        return undefined;
     }
 
     /**

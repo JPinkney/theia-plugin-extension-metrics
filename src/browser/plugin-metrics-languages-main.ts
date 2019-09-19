@@ -207,7 +207,7 @@ export class LanguagesMainPluginMetrics extends LanguagesMainImpl {
         this.extensionIDToExtensionFeatureMap.forEach((value, key) => {
             value.forEach((hand, f) => {
                 if (f === feature && handle === hand) {
-                    extensionName = key.id;
+                    extensionName = key;
                 }
             });
 
