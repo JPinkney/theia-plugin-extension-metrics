@@ -19,7 +19,7 @@ import { MetricOutput, AnalyticsFromRequests } from '../plugin-metrics-interface
 export class PluginMetricTimeOutput implements MetricOutput {
 
     public header =
-        '# HELP language_server_time_metrics Number of milliseconds it takes on average for a launguage server request\n# TYPE language_server_time_metrics gauge\n';
+        '# HELP language_server_time_metrics Number of milliseconds it takes on average for a language server request\n# TYPE language_server_time_metrics gauge\n';
 
     createMetricOutput(id: string, method: string, requestAnalytics: AnalyticsFromRequests): string {
         const avgTime = requestAnalytics.avgTimeTaken;
