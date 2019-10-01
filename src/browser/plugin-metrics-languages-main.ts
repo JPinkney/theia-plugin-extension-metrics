@@ -20,7 +20,7 @@ import { LanguagesMainImpl } from '@theia/plugin-ext/lib/main/browser/languages-
 import { SymbolInformation } from '@theia/languages/lib/browser';
 import { injectable, inject } from 'inversify';
 import * as vst from 'vscode-languageserver-protocol';
-import { LanguagesInfo } from '@theia/plugin-ext/lib/common/plugin-api-rpc';
+import { PluginInfo } from '@theia/plugin-ext/lib/common/plugin-api-rpc';
 import { SerializedDocumentFilter } from '@theia/plugin-ext/lib/common/plugin-api-rpc-model';
 import * as theia from '@theia/plugin';
 
@@ -208,105 +208,105 @@ export class LanguagesMainPluginMetrics extends LanguagesMainImpl {
             super.resolveRenameLocation(handle, model, position, token));
     }
 
-    $registerCompletionSupport(handle: number, languageInfo: LanguagesInfo,
+    $registerCompletionSupport(handle: number, pluginInfo: PluginInfo,
         selector: SerializedDocumentFilter[], triggerCharacters: string[], supportsResolveDetails: boolean): void {
-        this.registerPluginWithFeatureHandle(handle, languageInfo.pluginID);
-        super.$registerCompletionSupport(handle, languageInfo, selector, triggerCharacters, supportsResolveDetails);
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id);
+        super.$registerCompletionSupport(handle, pluginInfo, selector, triggerCharacters, supportsResolveDetails);
     }
 
-    $registerDefinitionProvider(handle: number, languageInfo: LanguagesInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, languageInfo.pluginID);
-        super.$registerDefinitionProvider(handle, languageInfo, selector);
+    $registerDefinitionProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id);
+        super.$registerDefinitionProvider(handle, pluginInfo, selector);
     }
 
-    $registerDeclarationProvider(handle: number, languageInfo: LanguagesInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, languageInfo.pluginID);
-        super.$registerDeclarationProvider(handle, languageInfo, selector);
+    $registerDeclarationProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id);
+        super.$registerDeclarationProvider(handle, pluginInfo, selector);
     }
 
-    $registerReferenceProvider(handle: number, languageInfo: LanguagesInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, languageInfo.pluginID);
-        super.$registerReferenceProvider(handle, languageInfo, selector);
+    $registerReferenceProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id);
+        super.$registerReferenceProvider(handle, pluginInfo, selector);
     }
 
-    $registerSignatureHelpProvider(handle: number, languageInfo: LanguagesInfo, selector: SerializedDocumentFilter[], metadata: theia.SignatureHelpProviderMetadata): void {
-        this.registerPluginWithFeatureHandle(handle, languageInfo.pluginID);
-        super.$registerSignatureHelpProvider(handle, languageInfo, selector, metadata);
+    $registerSignatureHelpProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[], metadata: theia.SignatureHelpProviderMetadata): void {
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id);
+        super.$registerSignatureHelpProvider(handle, pluginInfo, selector, metadata);
     }
 
-    $registerImplementationProvider(handle: number, languageInfo: LanguagesInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, languageInfo.pluginID);
-        super.$registerImplementationProvider(handle, languageInfo, selector);
+    $registerImplementationProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id);
+        super.$registerImplementationProvider(handle, pluginInfo, selector);
     }
 
-    $registerTypeDefinitionProvider(handle: number, languageInfo: LanguagesInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, languageInfo.pluginID);
-        super.$registerTypeDefinitionProvider(handle, languageInfo, selector);
+    $registerTypeDefinitionProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id);
+        super.$registerTypeDefinitionProvider(handle, pluginInfo, selector);
     }
 
-    $registerHoverProvider(handle: number, languageInfo: LanguagesInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, languageInfo.pluginID);
-        super.$registerHoverProvider(handle, languageInfo, selector);
+    $registerHoverProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id);
+        super.$registerHoverProvider(handle, pluginInfo, selector);
     }
 
-    $registerDocumentHighlightProvider(handle: number, languageInfo: LanguagesInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, languageInfo.pluginID);
-        super.$registerDocumentHighlightProvider(handle, languageInfo, selector);
+    $registerDocumentHighlightProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id);
+        super.$registerDocumentHighlightProvider(handle, pluginInfo, selector);
     }
 
-    $registerWorkspaceSymbolProvider(handle: number, languageInfo: LanguagesInfo): void {
-        this.registerPluginWithFeatureHandle(handle, languageInfo.pluginID);
-        super.$registerWorkspaceSymbolProvider(handle, languageInfo);
+    $registerWorkspaceSymbolProvider(handle: number, pluginInfo: PluginInfo): void {
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id);
+        super.$registerWorkspaceSymbolProvider(handle, pluginInfo);
     }
 
-    $registerDocumentLinkProvider(handle: number, languageInfo: LanguagesInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, languageInfo.pluginID);
-        super.$registerDocumentLinkProvider(handle, languageInfo, selector);
+    $registerDocumentLinkProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id);
+        super.$registerDocumentLinkProvider(handle, pluginInfo, selector);
     }
 
-    $registerCodeLensSupport(handle: number, languageInfo: LanguagesInfo, selector: SerializedDocumentFilter[], eventHandle: number): void {
-        this.registerPluginWithFeatureHandle(handle, languageInfo.pluginID);
-        super.$registerCodeLensSupport(handle, languageInfo, selector, eventHandle);
+    $registerCodeLensSupport(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[], eventHandle: number): void {
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id);
+        super.$registerCodeLensSupport(handle, pluginInfo, selector, eventHandle);
     }
 
-    $registerOutlineSupport(handle: number, languageInfo: LanguagesInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, languageInfo.pluginID);
-        super.$registerOutlineSupport(handle, languageInfo, selector);
+    $registerOutlineSupport(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id);
+        super.$registerOutlineSupport(handle, pluginInfo, selector);
     }
 
-    $registerDocumentFormattingSupport(handle: number, languageInfo: LanguagesInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, languageInfo.pluginID);
-        super.$registerDocumentFormattingSupport(handle, languageInfo, selector);
+    $registerDocumentFormattingSupport(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id);
+        super.$registerDocumentFormattingSupport(handle, pluginInfo, selector);
     }
 
-    $registerRangeFormattingProvider(handle: number, languageInfo: LanguagesInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, languageInfo.pluginID);
-        super.$registerRangeFormattingProvider(handle, languageInfo, selector);
+    $registerRangeFormattingProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id);
+        super.$registerRangeFormattingProvider(handle, pluginInfo, selector);
     }
 
-    $registerOnTypeFormattingProvider(handle: number, languageInfo: LanguagesInfo, selector: SerializedDocumentFilter[], autoFormatTriggerCharacters: string[]): void {
-        this.registerPluginWithFeatureHandle(handle, languageInfo.pluginID);
-        super.$registerOnTypeFormattingProvider(handle, languageInfo, selector, autoFormatTriggerCharacters);
+    $registerOnTypeFormattingProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[], autoFormatTriggerCharacters: string[]): void {
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id);
+        super.$registerOnTypeFormattingProvider(handle, pluginInfo, selector, autoFormatTriggerCharacters);
     }
 
-    $registerFoldingRangeProvider(handle: number, languageInfo: LanguagesInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, languageInfo.pluginID);
-        super.$registerFoldingRangeProvider(handle, languageInfo, selector);
+    $registerFoldingRangeProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id);
+        super.$registerFoldingRangeProvider(handle, pluginInfo, selector);
     }
 
-    $registerDocumentColorProvider(handle: number, languageInfo: LanguagesInfo, selector: SerializedDocumentFilter[]): void {
-        this.registerPluginWithFeatureHandle(handle, languageInfo.pluginID);
-        super.$registerDocumentColorProvider(handle, languageInfo, selector);
+    $registerDocumentColorProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[]): void {
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id);
+        super.$registerDocumentColorProvider(handle, pluginInfo, selector);
     }
 
-    $registerQuickFixProvider(handle: number, languageInfo: LanguagesInfo, selector: SerializedDocumentFilter[], codeActionKinds?: string[]): void {
-        this.registerPluginWithFeatureHandle(handle, languageInfo.pluginID);
-        super.$registerQuickFixProvider(handle, languageInfo, selector);
+    $registerQuickFixProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[], codeActionKinds?: string[]): void {
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id);
+        super.$registerQuickFixProvider(handle, pluginInfo, selector);
     }
 
-    $registerRenameProvider(handle: number, languageInfo: LanguagesInfo, selector: SerializedDocumentFilter[], supportsResolveLocation: boolean): void {
-        this.registerPluginWithFeatureHandle(handle, languageInfo.pluginID);
-        super.$registerRenameProvider(handle, languageInfo, selector, supportsResolveLocation);
+    $registerRenameProvider(handle: number, pluginInfo: PluginInfo, selector: SerializedDocumentFilter[], supportsResolveLocation: boolean): void {
+        this.registerPluginWithFeatureHandle(handle, pluginInfo.id);
+        super.$registerRenameProvider(handle, pluginInfo, selector, supportsResolveLocation);
     }
 
     private registerPluginWithFeatureHandle(handle: number, pluginID: string): void {
